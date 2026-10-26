@@ -1,3 +1,5 @@
+import java.util.LinkedList;
+import java.util.Scanner;
 import java.util.Stack;
 
 /**
@@ -32,13 +34,19 @@ public class InfixCalculator {
     /** Returns precedence: 2 for * /, 1 for + -, 0 otherwise. */
     private static int precedence(String op) {
         // TODO: return 2 for "*" and "/", 1 for "+" and "-", 0 otherwise
+        if(op.equals("*") || op.equals("/")){
+            return 2;
+        }
+        if(op.equals("+") || op.equals("-")){
+            return 1;
+        }
         return 0;
     }
 
     /** Returns true if token is one of: + - * / */
     private static boolean isOperator(String token) {
         // TODO: return true if token equals "+", "-", "*", or "/"
-        return false;
+        return token.equals("+") || token.equals("-") || token.equals("*") || token.equals("/");
     }
 
     /**
@@ -50,14 +58,31 @@ public class InfixCalculator {
     public static String convert(String infix) {
         Stack<String> stack = new Stack<>();
         StringBuilder output = new StringBuilder();
-        String[] tokens = infix.split(" ");
-
-        for (String token : tokens) {
-
-
+        Scanner tokenizer = new Scanner(infix);
+        while(tokenizer.hasNext()){
+            String token = tokenizer.next();
+            if(!isOperator(token) && !token.equals("(") && !token.equals(")")){
+                output.append(token + " ");
+            }
+            else if(token.equals("(")){
+                stack.push(token);
+            }
+            else if(token.equals(")")){
+                while(!stack.peek().equals("(")){
+                    output.append(stack.pop() + " ");
+                }
+                stack.pop();
+            }
+            else{
+                while (!stack.isEmpty() && !stack.peek().equals("(") && (precedence(stack.peek()) >= precedence(token))) {
+                    output.append(stack.pop() + " ");
+                }
+                stack.push(token);
+            }
         }
-
-        // TODO: pop any remaining operators from the stack to output
+        while(!stack.empty()){
+            output.append(stack.pop() + " ");
+        }
 
         return output.toString().trim();
     }
@@ -83,9 +108,31 @@ public class InfixCalculator {
      * @return integer result, e.g. 7
      */
     public static int evaluatePostfix(String postfix) {
-        // *** PASTE YOUR COMPLETED METHOD BODY FROM LAST WEEK HERE ***
-        // TODO: implement postfix evaluation using a Stack<Integer>
-        return 0; // placeholder — remove when implemented
+        LinkedList<Integer> numbers = new LinkedList<>();
+        Scanner tokenizer = new Scanner(postfix);
+        while(tokenizer.hasNext()){
+            String token = tokenizer.next();
+            if(token.equals("+") || token.equals("-") || token.equals("*") || token.equals("/")){
+                Integer right = numbers.pop();
+                Integer left = numbers.pop();
+                if(token.equals("+")){
+                    numbers.push(left + right);
+                }
+                else if(token.equals("-")){
+                    numbers.push(left - right);
+                }
+                else if(token.equals("*")){
+                    numbers.push(left * right);
+                }
+                else{
+                    numbers.push(left / right);
+                }
+            }
+            else{
+                numbers.push(Integer.parseInt(token));
+            }
+        }
+        return numbers.pop();
     }
 
     // ================================================================
